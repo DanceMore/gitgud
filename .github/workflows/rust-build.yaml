@@ -26,7 +26,7 @@ jobs:
 
     - name: Set release tag
       id: set_tag
-      run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha }}"
+      run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha | slice(0, 8) }}"
 
     - name: Create Release
       id: create_release
@@ -35,7 +35,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.set_tag.outputs.tag }}
-        release_name: Release ${{ steps.set_tag.outputs.tag }}
+        release_name: ${{ steps.set_tag.outputs.tag }}
         body: |
           This is an example release.
         draft: false
