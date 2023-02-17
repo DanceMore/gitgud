@@ -34,7 +34,7 @@ jobs:
         release_name: Release ${{ github.ref }}
         body: |
           This is an example release.
-        draft: false
+        draft: true
         prerelease: false
 
     - name: Upload binaries
