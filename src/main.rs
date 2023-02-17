@@ -5,10 +5,17 @@ use std::process::Command;
 
 fn main() -> std::io::Result<()> {
     let root = env::args().nth(1).unwrap_or(".".into());
-    println!("[+] target basedir is {}", &root);
+    let root = if root == "." {
+        env::current_dir().unwrap()
+    } else {
+        root.into()
+    };
+    println!("[+] target basedir is {}", root.display());
+    env::set_current_dir(&root)?;
 
     for entry in fs::read_dir(&root)? {
         let entry = entry?;
+        println!("[-] checking directory {}", &entry.path().display());
         if !entry.file_type()?.is_dir() {
             continue;
         }
