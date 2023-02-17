@@ -13,19 +13,29 @@ fn main() -> std::io::Result<()> {
     println!("[+] target basedir is {}", root.display());
     env::set_current_dir(&root)?;
 
+    let debug = env::args().any(|arg| arg == "--debug");
+
     for entry in fs::read_dir(&root)? {
         let entry = entry?;
-        println!("[-] checking directory {}", &entry.path().display());
+        if debug {
+            println!("[-] checking directory {}", &entry.path().display());
+        }
         if !entry.file_type()?.is_dir() {
             continue;
         }
         let repo_dir = entry.path().join(".git");
         if !repo_dir.is_dir() {
+            if debug {
+                println!("[---] not a repo, skipping...");
+            }
             continue;
         }
 
+        if debug {
+            println!("[-+] directory is a git repo");
+        }
+
         env::set_current_dir(&repo_dir.parent().unwrap())?;
-        println!("[-] checking directory {}", &repo_dir.display());
 
         // advanced git status handling
         let mut dirty = false;
