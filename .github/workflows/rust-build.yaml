@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Build for Linux x86-64
+      run: |
+        rustup target add x86_64-unknown-linux-gnu
+        cargo build --release --target x86_64-unknown-linux-gnu
+        cp target/x86_64-unknown-linux-gnu/release/rust-quake3rcon ./rust-quake3rcon-linux-x86_64
+
+    - name: Upload binaries
+      uses: actions/upload-artifact@v2
+      with:
+        name: Binaries
+        path: |
+          rust-quake3rcon-linux-x86_64
