@@ -30,6 +30,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag_name: ${{ format('{0} {1}', formatTime(now(), 'yyyy-MM-dd-HH-mm-ss'), github.sha) }}
         release_name: Release ${{ github.ref }}
         body: |
           This is an example release.
