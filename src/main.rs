@@ -53,6 +53,13 @@ fn main() -> std::io::Result<()> {
         if dirty {
             println!("[!!!] dirty repo found => {}", repo_dir.parent().unwrap().display());
         }
+
+        let output = Command::new("git").arg("remote").arg("-v").output()?;
+        let remotes = output.stdout.lines().collect::<Vec<_>>();
+
+        if remotes.len() < 2 {
+            println!("[!!!] repo missing remote => {}", repo_dir.parent().unwrap().display());
+        }
     }
 
     Ok(())
