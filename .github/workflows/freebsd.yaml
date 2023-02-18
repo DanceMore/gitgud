@@ -39,12 +39,12 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: Binaries
-          path: |
-            rust-gitaudit-freebsd-x86_64
+       - name: Upload binaries
+         uses: actions/upload-artifact@v2
+         with:
+           name: Binaries
+           path: |
+             rust-gitaudit-freebsd-x86_64
 
         - name: Attach binaries to release
           id: attach_artifacts
