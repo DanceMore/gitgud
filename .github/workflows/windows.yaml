@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    needs: create-release
 
     steps:
     - name: Checkout code
@@ -58,3 +59,4 @@ jobs:
         upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=rust-gitaudit-windows-x86_64.exe
         asset_path: rust-gitaudit-windows-x86_64.exe
         asset_name: rust-gitaudit-windows-x86_64.exe
+        asset_content_type: application/octet-stream

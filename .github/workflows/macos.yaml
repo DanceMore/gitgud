@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: macOS-latest
+    needs: create-release
 
     steps:
     - name: Checkout code
