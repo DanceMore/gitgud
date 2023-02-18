@@ -21,8 +21,8 @@ jobs:
           target: x86_64-unknown-freebsd
       - run: cargo build
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: rust-gitaudit
-        path: target/x86_64-unknown-freebsd/debug/rust_gitaudit
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: rust-gitaudit
+          path: target/x86_64-unknown-freebsd/debug/rust_gitaudit
