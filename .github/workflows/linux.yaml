@@ -26,7 +26,9 @@ jobs:
 
     - name: Set release tag
       id: set_tag
-      run: echo "::set-output name=tag::${{ github.sha }}"
+      run: |
+        tag=$(git rev-parse --short=8 ${{ github.sha }})
+        echo "::set-output name=tag::${tag}"
 
     - name: Get release ID
       id: get_release_id
