@@ -25,13 +25,20 @@ jobs:
 
     - name: Set release tag
       id: set_tag
+      shell: powershell
       run: |
-        tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "::set-output name=tag::${tag}"
+        $tag = git rev-parse --short=8 ${{ github.sha }}
+        Write-Host "::set-output name=tag::$tag"
 
     - name: Get release ID
       id: get_release_id
-      run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.set_tag.outputs.tag }} | jq -r '.id')"
+      shell: powershell
+      run: |
+        $tag = '${{ steps.set_tag.outputs.tag }}'
+        $url = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag"
+        $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN" }
+        $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
+        Write-Output "::set-output name=id::$($response.id)"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
