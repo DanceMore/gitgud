@@ -39,20 +39,20 @@ jobs:
           draft: false
           prerelease: false
 
-       - name: Upload binaries
-         uses: actions/upload-artifact@v2
-         with:
-           name: Binaries
-           path: |
-             rust-gitaudit-freebsd-x86_64
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: Binaries
+          path: |
+            rust-gitaudit-freebsd-x86_64
 
-        - name: Attach binaries to release
-          id: attach_artifacts
-          uses: actions/upload-release-asset@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ steps.create_release.outputs.upload_url }}
-            asset_path: rust-gitaudit-freebsd-x86_64
-            asset_name: rust-gitaudit-freebsd-x86_64
-            asset_content_type: application/octet-stream
+      - name: Attach binaries to release
+        id: attach_artifacts
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: rust-gitaudit-freebsd-x86_64
+          asset_name: rust-gitaudit-freebsd-x86_64
+          asset_content_type: application/octet-stream
