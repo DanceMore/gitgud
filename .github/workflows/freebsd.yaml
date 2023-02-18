@@ -10,17 +10,16 @@ jobs:
   build-freebsd:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Install dependencies for cross-compiling
-      run: sudo apt-get update && sudo apt-get -y install gcc g++ binutils libc6-dev
+      - name: Install Rust
+        run: rustup update stable
 
-    - name: Install cross
-      uses: rust-embedded/cross@v0.2.1
-
-    - name: Build for FreeBSD
-      run: cross build --target x86_64-unknown-freebsd
+      - name: Install cross-compilation tools
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        with:
+          target: x86_64-unknown-freebsd
+      - run: cargo build
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
