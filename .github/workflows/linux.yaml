@@ -24,13 +24,9 @@ jobs:
         cargo build --release --target x86_64-unknown-linux-musl
         cp target/x86_64-unknown-linux-musl/release/rust-gitaudit ./rust-gitaudit-linux-x86_64
 
-    - name: Set release tag
-      id: set_tag
-      run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha }}"
-
     - name: Get release ID
       id: get_release_id
-      run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.set_tag.outputs.tag }} | jq -r '.id')"
+      run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.id')"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
