@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Set release tag
         id: set_tag
-        run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha }}"
+        run: echo "::set-output name=tag::${{ github.sha }}"
 
       - name: Create Release
         id: create_release
