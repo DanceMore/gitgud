@@ -11,7 +11,9 @@ jobs:
     steps:
       - name: Set release tag
         id: set_tag
-        run: echo "::set-output name=tag::${{ github.sha }}"
+        run: |
+          message=$(git log --format=%B -n 1 ${{ github.sha }})
+          echo "::set-output name=tag::${{ github.sha }}-${message::8}}"
 
       - name: Create Release
         id: create_release
