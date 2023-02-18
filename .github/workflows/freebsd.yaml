@@ -19,10 +19,40 @@ jobs:
         uses: taiki-e/setup-cross-toolchain-action@v1
         with:
           target: x86_64-unknown-freebsd
-      - run: cargo build
+      - run: cargo build --release
+      - run: cp target/x86_64-unknown-freebsd/release/rust-gitaudit ./rust-gitaudit-freebsd-x86_64
 
-      - name: Upload artifact
+      - name: Set release tag
+        id: set_tag
+        run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha }}"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.set_tag.outputs.tag }}
+          release_name: ${{ steps.set_tag.outputs.tag }}
+          body: |
+            This is an example release.
+          draft: false
+          prerelease: false
+
+      - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
-          name: rust-gitaudit
-          path: target/x86_64-unknown-freebsd/debug/rust_gitaudit
+          name: Binaries
+          path: |
+            rust-gitaudit-freebsd-x86_64
+
+        - name: Attach binaries to release
+          id: attach_artifacts
+          uses: actions/upload-release-asset@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }}
+            asset_path: rust-gitaudit-freebsd-x86_64
+            asset_name: rust-gitaudit-freebsd-x86_64
+            asset_content_type: application/octet-stream
