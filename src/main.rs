@@ -38,20 +38,23 @@ fn main() -> std::io::Result<()> {
         env::set_current_dir(&repo_dir.parent().unwrap())?;
 
         // advanced git status handling
-        let mut dirty = false;
-        let output = Command::new("git").arg("status").output()?;
+        let output = Command::new("git").arg("status").arg("--porcelain").output()?;
+        let output_str = String::from_utf8_lossy(&output.stdout);
 
-        for line in output.stdout.lines() {
-            if let Ok(line) = line {
-                if line.contains("Your branch is ahead") || line.contains("Changes not staged for commit") {
-                    dirty = true;
-                    break;
-                }
-            }
+        let untracked_files_found = output_str.lines().any(|line| line.starts_with("??"));
+        let changes_not_staged_for_commit = output_str.lines().any(|line| line.starts_with("M") || line.starts_with("D"));
+        let branch_ahead_of_remote = output_str.lines().any(|line| line.starts_with("##") && line.contains("[ahead "));
+
+        if untracked_files_found {
+            println!("[!!!] untracked files found => {}", repo_dir.parent().unwrap().display());
         }
 
-        if dirty {
-            println!("[!!!] dirty repo found => {}", repo_dir.parent().unwrap().display());
+        if changes_not_staged_for_commit {
+            println!("[!!!] changes not staged for commit => {}", repo_dir.parent().unwrap().display());
+        }
+
+        if branch_ahead_of_remote {
+            println!("[!!!] branch ahead of remote => {}", repo_dir.parent().unwrap().display());
         }
 
         let output = Command::new("git").arg("remote").arg("-v").output()?;
