@@ -1,10 +1,9 @@
-name: Build for FreeBSD
+name: Build for FreeBSD x86_64
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
   build-freebsd:
@@ -22,24 +21,11 @@ jobs:
       - run: cargo build --release
       - run: cp target/x86_64-unknown-freebsd/release/rust-gitaudit ./rust-gitaudit-freebsd-x86_64
 
-      - name: Set release tag
-        id: set_tag
-        run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha }}"
-
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Get release ID
+        id: get_release_id
+        run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.set_tag.outputs.tag }} | jq -r '.id')"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
-          echo "::set-output name=message::$MESSAGE"
-        with:
-          tag_name: ${{ steps.set_tag.outputs.tag }}
-          release_name: ${{ steps.set_tag.outputs.tag }}
-          body: ${{ steps.create_release.outputs.message }}
-        draft: false
-        prerelease: false
 
       - name: Upload binaries
         uses: actions/upload-artifact@v2
@@ -54,7 +40,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=rust-gitaudit-freebsd-x86_64
           asset_path: rust-gitaudit-freebsd-x86_64
           asset_name: rust-gitaudit-freebsd-x86_64
           asset_content_type: application/octet-stream

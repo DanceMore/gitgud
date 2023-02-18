@@ -1,0 +1,29 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set release tag
+        id: set_tag
+        run: echo "::set-output name=tag::$(date +'%Y-%m-%d-%H-%M-%S')-${{ github.sha }}"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
+          echo "::set-output name=message::$MESSAGE"
+        with:
+          tag_name: ${{ steps.set_tag.outputs.tag }}
+          release_name: ${{ steps.set_tag.outputs.tag }}
+          body: ${{ steps.create_release.outputs.message }}
+        draft: false
+        prerelease: false
