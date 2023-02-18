@@ -41,9 +41,9 @@ fn main() -> std::io::Result<()> {
         let output = Command::new("git").arg("status").arg("--porcelain").output()?;
         let output_str = String::from_utf8_lossy(&output.stdout);
 
-        let untracked_files_found = output_str.lines().any(|line| line.starts_with("??"));
-        let changes_not_staged_for_commit = output_str.lines().any(|line| line.starts_with("M") || line.starts_with("D"));
-        let branch_ahead_of_remote = output_str.lines().any(|line| line.starts_with("##") && line.contains("[ahead "));
+        let untracked_files_found = output_str.lines().any(|line| line.trim().starts_with("??"));
+        let changes_not_staged_for_commit = output_str.lines().any(|line| line.trim().starts_with("M") || line.trim().starts_with("D"));
+        let branch_ahead_of_remote = output_str.lines().any(|line| line.trim().starts_with("##") && line.contains("[ahead "));
 
         if untracked_files_found {
             println!("[!!!] untracked files found => {}", repo_dir.parent().unwrap().display());
