@@ -9,6 +9,8 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+
       - name: Set release tag
         id: set_tag
         run: |
