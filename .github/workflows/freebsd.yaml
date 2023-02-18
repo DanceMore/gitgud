@@ -31,13 +31,15 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
+          echo "::set-output name=message::$MESSAGE"
         with:
           tag_name: ${{ steps.set_tag.outputs.tag }}
           release_name: ${{ steps.set_tag.outputs.tag }}
-          body: |
-            This is an example release.
-          draft: false
-          prerelease: false
+          body: ${{ steps.create_release.outputs.message }}
+        draft: false
+        prerelease: false
 
       - name: Upload binaries
         uses: actions/upload-artifact@v2
