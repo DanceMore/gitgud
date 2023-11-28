@@ -1,3 +1,4 @@
+use colored::*;
 use std::env;
 use std::fs;
 use std::io::BufRead;
@@ -10,12 +11,18 @@ fn main() -> std::io::Result<()> {
     } else {
         root.into()
     };
-    println!("[+] target basedir is {}", root.display());
+    println!(
+        "{}",
+        format!("[?] target basedir is {}", root.display())
+            .cyan()
+            .bold()
+    );
     env::set_current_dir(&root)?;
 
     let debug = env::args().any(|arg| arg == "--debug");
 
     for entry in fs::read_dir(&root)? {
+        let mut printed = false;
         let entry = entry?;
         if debug {
             println!("[-] checking directory {}", &entry.path().display());
@@ -38,30 +45,77 @@ fn main() -> std::io::Result<()> {
         env::set_current_dir(&repo_dir.parent().unwrap())?;
 
         // advanced git status handling
-        let output = Command::new("git").arg("status").arg("--porcelain").output()?;
+        let output = Command::new("git")
+            .arg("status")
+            .arg("--porcelain")
+            .output()?;
         let output_str = String::from_utf8_lossy(&output.stdout);
 
         let untracked_files_found = output_str.lines().any(|line| line.trim().starts_with("??"));
-        let changes_not_staged_for_commit = output_str.lines().any(|line| line.trim().starts_with("M") || line.trim().starts_with("D"));
-        let branch_ahead_of_remote = output_str.lines().any(|line| line.trim().starts_with("##") && line.contains("[ahead "));
+        let changes_not_staged_for_commit = output_str
+            .lines()
+            .any(|line| line.trim().starts_with("M") || line.trim().starts_with("D"));
+        let branch_ahead_of_remote = output_str
+            .lines()
+            .any(|line| line.trim().starts_with("##") && line.contains("[ahead "));
 
         if untracked_files_found {
-            println!("[!!!] untracked files found => {}", repo_dir.parent().unwrap().display());
+            println!(
+                "{}",
+                format!(
+                    "[+] {} => untracked files found",
+                    repo_dir.parent().unwrap().display()
+                )
+                .green()
+                .bold()
+            );
+            printed = true;
         }
 
         if changes_not_staged_for_commit {
-            println!("[!!!] changes not staged for commit => {}", repo_dir.parent().unwrap().display());
+            println!(
+                "{}",
+                format!(
+                    "[~] {} => changes not staged for commit",
+                    repo_dir.parent().unwrap().display()
+                )
+                .yellow()
+                .bold()
+            );
+            printed = true;
         }
 
         if branch_ahead_of_remote {
-            println!("[!!!] branch ahead of remote => {}", repo_dir.parent().unwrap().display());
+            println!(
+                "{}",
+                format!(
+                    "[!] {} => branch ahead of remote",
+                    repo_dir.parent().unwrap().display()
+                )
+                .red()
+                .bold()
+            );
+            printed = true;
         }
 
         let output = Command::new("git").arg("remote").arg("-v").output()?;
         let remotes = output.stdout.lines().collect::<Vec<_>>();
 
         if remotes.len() < 2 {
-            println!("[!!!] repo missing remote => {}", repo_dir.parent().unwrap().display());
+            println!(
+                "{}",
+                format!(
+                    "[!] repo missing remote => {}",
+                    repo_dir.parent().unwrap().display()
+                )
+                .red()
+                .bold()
+            );
+            printed = true;
+        }
+
+        if printed {
+            println!("");
         }
     }
 
