@@ -105,10 +105,28 @@ fn main() -> std::io::Result<()> {
             println!(
                 "{}",
                 format!(
-                    "[!] repo missing remote => {}",
+                    "[!] {} => repo missing remote",
                     repo_dir.parent().unwrap().display()
                 )
                 .red()
+                .bold()
+            );
+            printed = true;
+        }
+
+	// Get the current branch name
+        let branch_output = Command::new("git").arg("rev-parse").arg("--abbrev-ref").arg("HEAD").output()?;
+        let current_branch = String::from_utf8_lossy(&branch_output.stdout).trim().to_string();
+
+        // Check if the current branch is NOT "master" or "main"
+        if !(current_branch == "master" || current_branch == "main") {
+            println!(
+                "{}",
+                format!(
+                    "[!] {} => currently on a checked out branch: {}",
+                    repo_dir.parent().unwrap().display(), current_branch
+                )
+                .cyan()
                 .bold()
             );
             printed = true;
