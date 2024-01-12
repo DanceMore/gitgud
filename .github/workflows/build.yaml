@@ -144,6 +144,12 @@ jobs:
         cargo build --release --target x86_64-apple-darwin
         cp target/x86_64-apple-darwin/release/gitgud ./gitgud-darwin-x86_64
 
+    - name: Build for macOS arm64
+      run: |
+        rustup target add aarch64-apple-darwin
+        cargo build --release --target aarch64-apple-darwin
+        cp target/aarch64-apple-darwin/release/gitgud ./gitgud-darwin-arm64
+
     - name: Set release tag
       id: set_tag
       run: |
@@ -162,6 +168,7 @@ jobs:
         name: Binaries
         path: |
           gitgud-darwin-x86_64
+          gitgud-darwin-arm64
 
     - name: Attach binaries to release
       id: attach_artifacts
@@ -172,6 +179,17 @@ jobs:
         upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-darwin-x86_64
         asset_path: gitgud-darwin-x86_64
         asset_name: gitgud-darwin-x86_64
+        asset_content_type: application/octet-stream
+
+    - name: Attach ARM64 binaries to release
+      id: attach_arm64_artifacts
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-darwin-arm64
+        asset_path: gitgud-darwin-arm64
+        asset_name: gitgud-darwin-arm64
         asset_content_type: application/octet-stream
 
   build-windows:
