@@ -44,7 +44,7 @@ jobs:
       with:
         target: x86_64-unknown-freebsd
     - run: cargo build --release
-    - run: cp target/x86_64-unknown-freebsd/release/rust-gitaudit ./rust-gitaudit-freebsd-x86_64
+    - run: cp target/x86_64-unknown-freebsd/release/gitgud ./gitgud-freebsd-x86_64
 
     - name: Set release tag
       id: set_tag
@@ -63,7 +63,7 @@ jobs:
       with:
         name: Binaries
         path: |
-          rust-gitaudit-freebsd-x86_64
+          gitgud-freebsd-x86_64
 
     - name: Attach binaries to release
       id: attach_artifacts
@@ -71,9 +71,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=rust-gitaudit-freebsd-x86_64
-        asset_path: rust-gitaudit-freebsd-x86_64
-        asset_name: rust-gitaudit-freebsd-x86_64
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-freebsd-x86_64
+        asset_path: gitgud-freebsd-x86_64
+        asset_name: gitgud-freebsd-x86_64
         asset_content_type: application/octet-stream
 
   build-linux:
@@ -93,7 +93,7 @@ jobs:
       run: |
         rustup target add x86_64-unknown-linux-musl
         cargo build --release --target x86_64-unknown-linux-musl
-        cp target/x86_64-unknown-linux-musl/release/rust-gitaudit ./rust-gitaudit-linux-x86_64
+        cp target/x86_64-unknown-linux-musl/release/gitgud ./gitgud-linux-x86_64
 
     - name: Set release tag
       id: set_tag
@@ -112,7 +112,7 @@ jobs:
       with:
         name: Binaries
         path: |
-          rust-gitaudit-linux-x86_64
+          gitgud-linux-x86_64
 
     - name: Attach binaries to release
       id: attach_artifacts
@@ -120,9 +120,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=rust-gitaudit-linux-x86_64
-        asset_path: rust-gitaudit-linux-x86_64
-        asset_name: rust-gitaudit-linux-x86_64
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-linux-x86_64
+        asset_path: gitgud-linux-x86_64
+        asset_name: gitgud-linux-x86_64
         asset_content_type: application/octet-stream
 
   build-macos:
@@ -142,7 +142,7 @@ jobs:
       run: |
         rustup target add x86_64-apple-darwin
         cargo build --release --target x86_64-apple-darwin
-        cp target/x86_64-apple-darwin/release/rust-gitaudit ./rust-gitaudit-darwin-x86_64
+        cp target/x86_64-apple-darwin/release/gitgud ./gitgud-darwin-x86_64
 
     - name: Set release tag
       id: set_tag
@@ -161,7 +161,7 @@ jobs:
       with:
         name: Binaries
         path: |
-          rust-gitaudit-darwin-x86_64
+          gitgud-darwin-x86_64
 
     - name: Attach binaries to release
       id: attach_artifacts
@@ -169,9 +169,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=rust-gitaudit-darwin-x86_64
-        asset_path: rust-gitaudit-darwin-x86_64
-        asset_name: rust-gitaudit-darwin-x86_64
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-darwin-x86_64
+        asset_path: gitgud-darwin-x86_64
+        asset_name: gitgud-darwin-x86_64
         asset_content_type: application/octet-stream
 
   build-windows:
@@ -190,7 +190,7 @@ jobs:
     - name: Build for Windows x86-64
       run: |
         cargo build --release --target x86_64-pc-windows-msvc
-        cp target/x86_64-pc-windows-msvc/release/rust-gitaudit.exe ./rust-gitaudit-windows-x86_64.exe
+        cp target/x86_64-pc-windows-msvc/release/gitgud.exe ./gitgud-windows-x86_64.exe
 
     - name: Set release tag
       id: set_tag
@@ -216,7 +216,7 @@ jobs:
       with:
         name: Binaries
         path: |
-          rust-gitaudit-windows-x86_64.exe
+          gitgud-windows-x86_64.exe
 
     - name: Attach binaries to release
       id: attach_artifacts
@@ -224,7 +224,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=rust-gitaudit-windows-x86_64.exe
-        asset_path: rust-gitaudit-windows-x86_64.exe
-        asset_name: rust-gitaudit-windows-x86_64.exe
+        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-windows-x86_64.exe
+        asset_path: gitgud-windows-x86_64.exe
+        asset_name: gitgud-windows-x86_64.exe
         asset_content_type: application/octet-stream
