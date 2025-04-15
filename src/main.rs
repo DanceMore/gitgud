@@ -118,8 +118,9 @@ fn main() -> std::io::Result<()> {
         let branch_output = Command::new("git").arg("rev-parse").arg("--abbrev-ref").arg("HEAD").output()?;
         let current_branch = String::from_utf8_lossy(&branch_output.stdout).trim().to_string();
 
-        // Check if the current branch is NOT "master" or "main"
-        if !(current_branch == "master" || current_branch == "main") {
+        // acceptable default branches when not working:
+        // master, main, develop
+        if !(current_branch == "master" || current_branch == "main" || current_branch == "develop" ) {
             println!(
                 "{}",
                 format!(
