@@ -1,0 +1,33 @@
+# GitGud Configuration File
+
+# Thread configuration
+threads = 8
+
+# Check settings
+check_untracked = true
+check_unstaged = true
+check_ahead = true
+check_no_remotes = true
+check_branch = true
+check_prs = true
+include_draft_prs = true
+
+# Default directories to scan
+default_paths = [
+    "/home/user/projects",
+    "/home/user/work"
+]
+
+# GitHub configuration
+[github]
+# Personal access token for GitHub API
+# Can also be set via GITHUB_TOKEN env var
+token = "your_github_token_here"
+
+# List of branches that should not trigger the non-default branch warning
+# These branches are considered "protected" or long-lived
+protected_branches = [
+    "feature/long-term",
+    "release/v2.0",
+    "maintenance"
+]
