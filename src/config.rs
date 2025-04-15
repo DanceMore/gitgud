@@ -75,7 +75,6 @@ impl Default for Config {
             check_branch: true,
             check_prs: false,
             include_draft_prs: true,
-            default_paths: vec![],
             github: GitHubConfig::default(),
         }
     }
