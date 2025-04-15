@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 
-/// Fast Git repository status scanner that checks multiple repositories in a directory
+/// Opinionated Git repository scanner to keep you Organized and On Task
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
@@ -27,7 +27,7 @@ struct Args {
     #[arg(short, long)]
     all: bool,
 
-    /// Path to config file (default: ~/.git_scanner.toml)
+    /// Path to config file (default: ~/.gitgud.toml)
     #[arg(short, long)]
     config: Option<PathBuf>,
 
@@ -43,9 +43,9 @@ struct Args {
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     check_ahead: bool,
 
-    /// Check if repository is missing remotes
+    /// Check if repository has no remotes
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
-    check_remotes: bool,
+    check_no_remotes: bool,
 
     /// Check if branch is not a default branch (main, master, develop)
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
@@ -68,7 +68,7 @@ struct Config {
     check_ahead: bool,
 
     #[serde(default = "default_true")]
-    check_remotes: bool,
+    check_no_remotes: bool,
 
     #[serde(default = "default_true")]
     check_branch: bool,
@@ -92,7 +92,7 @@ impl Default for Config {
             check_untracked: true,
             check_unstaged: true,
             check_ahead: true,
-            check_remotes: true,
+            check_no_remotes: true,
             check_branch: true,
             default_paths: vec![],
         }
@@ -104,7 +104,7 @@ struct RepoFilters {
     check_untracked: bool,
     check_unstaged: bool,
     check_ahead: bool,
-    check_remotes: bool,
+    check_no_remotes: bool,
     check_branch: bool,
 }
 
@@ -121,7 +121,7 @@ impl RepoStatus {
         (filters.check_untracked && self.untracked_files)
             || (filters.check_unstaged && self.unstaged_changes)
             || (filters.check_ahead && self.ahead_of_remote)
-            || (filters.check_remotes && self.missing_remote)
+            || (filters.check_no_remotes && self.missing_remote)
             || (filters.check_branch && self.non_default_branch.is_some())
     }
 }
@@ -138,7 +138,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         check_untracked: args.check_untracked,
         check_unstaged: args.check_unstaged,
         check_ahead: args.check_ahead,
-        check_remotes: args.check_remotes,
+        check_no_remotes: args.check_no_remotes,
         check_branch: args.check_branch,
     };
 
@@ -212,7 +212,7 @@ fn load_config(config_path: Option<&Path>) -> Result<Config, Box<dyn std::error:
     } else {
         // Try to find config in default locations
         let home_dir = dirs::home_dir().unwrap_or_default();
-        let home_config = home_dir.join(".git_scanner.toml");
+        let home_config = home_dir.join(".gitgud.toml");
 
         if home_config.exists() {
             home_config
@@ -220,7 +220,7 @@ fn load_config(config_path: Option<&Path>) -> Result<Config, Box<dyn std::error:
             // Also try XDG config directory
             match dirs::config_dir() {
                 Some(config_dir) => {
-                    let xdg_config = config_dir.join("git_scanner").join("config.toml");
+                    let xdg_config = config_dir.join("gitgud").join("config.toml");
                     if xdg_config.exists() {
                         xdg_config
                     } else {
@@ -294,7 +294,7 @@ fn check_repo_status(repo_path: &Path, filters: &RepoFilters, debug: bool) -> Re
     }
 
     // Check remotes if needed
-    if filters.check_remotes {
+    if filters.check_no_remotes {
         if let Ok(output) = Command::new("git")
             .arg("-C")
             .arg(repo_path)
@@ -378,7 +378,7 @@ fn display_repo_status(repo_path: &Path, status: &RepoStatus, filters: &RepoFilt
         printed = true;
     }
 
-    if filters.check_remotes && status.missing_remote {
+    if filters.check_no_remotes && status.missing_remote {
         println!(
             "{}",
             format!("[!] {} => repo missing remote", repo_path.display())
