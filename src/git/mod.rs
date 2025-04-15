@@ -1,2 +1,2 @@
-pub mod status;
 pub mod remote;
+pub mod status;

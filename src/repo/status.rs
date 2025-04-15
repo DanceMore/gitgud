@@ -1,7 +1,7 @@
-use std::collections::HashSet;
 use crate::git::status::GitStatus;
 use crate::github::pr::PullRequestInfo;
 use crate::repo::filters::RepoFilters;
+use std::collections::HashSet;
 
 pub struct RepoStatus {
     // Git status
@@ -10,25 +10,26 @@ pub struct RepoStatus {
     pub ahead_of_remote: bool,
     pub missing_remote: bool,
     pub non_default_branch: Option<String>,
-    
+
     // GitHub PR information
     pub open_prs: Vec<PullRequestInfo>,
 }
 
 impl RepoStatus {
     pub fn new(
-        git_status: GitStatus, 
-        prs: Vec<PullRequestInfo>, 
-        protected_branches: HashSet<String>
+        git_status: GitStatus,
+        prs: Vec<PullRequestInfo>,
+        protected_branches: HashSet<String>,
     ) -> Self {
         // Determine if we should warn about non-default branch
-        let non_default_branch = if !git_status.is_default_branch && 
-                                   !protected_branches.contains(&git_status.current_branch) {
+        let non_default_branch = if !git_status.is_default_branch
+            && !protected_branches.contains(&git_status.current_branch)
+        {
             Some(git_status.current_branch.clone())
         } else {
             None
         };
-        
+
         Self {
             untracked_files: git_status.untracked_files,
             unstaged_changes: git_status.unstaged_changes,

@@ -10,14 +10,14 @@ pub fn get_remote_url(repo_path: &Path) -> Option<String> {
         .arg("remote.origin.url")
         .output()
         .ok()?;
-    
+
     if output.status.success() {
         let url = String::from_utf8_lossy(&output.stdout).trim().to_string();
         if !url.is_empty() {
             return Some(url);
         }
     }
-    
+
     None
 }
 
@@ -28,7 +28,7 @@ pub fn list_remote_branches(repo_path: &Path) -> Vec<String> {
         .arg("branch")
         .arg("-r")
         .output();
-    
+
     match output {
         Ok(output) if output.status.success() => {
             String::from_utf8_lossy(&output.stdout)
@@ -44,7 +44,7 @@ pub fn list_remote_branches(repo_path: &Path) -> Vec<String> {
                     }
                 })
                 .collect()
-        },
+        }
         _ => Vec::new(),
     }
 }

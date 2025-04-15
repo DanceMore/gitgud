@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let file_branches = config::load_protected_branches(path)?;
         protected_branches.extend(file_branches);
     }
-    
+
     // Create a HashSet for faster lookups
     let protected_branches: HashSet<String> = protected_branches.into_iter().collect();
 
@@ -44,8 +44,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         check_ahead: args.check_ahead,
         check_no_remotes: args.check_no_remotes,
         check_branch: args.check_branch,
-        check_prs: args.check_prs || config.check_prs,
-        include_draft_prs: args.include_draft_prs && config.include_draft_prs,
+        // Command line args should take precedence over config
+        check_prs: args.check_prs,
+        // For include_draft_prs, we should only apply it if check_prs is true,
+        // but still respect the command line value
+        include_draft_prs: args.include_draft_prs,
     };
 
     // Get GitHub token
@@ -91,7 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Process repositories in parallel
     let results = Arc::new(Mutex::new(Vec::new()));
-    
+
     // We use a specific collection for handles to avoid consuming 'entries'
     let handles: Vec<_> = entries
         .iter() // Use iter() instead of into_iter() to keep ownership
@@ -102,7 +105,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let token = github_token.clone();
             let protected_branches = protected_branches.clone();
             let debug = args.debug;
-            
+
             tokio::spawn(async move {
                 if debug {
                     println!("[-] Checking repository {}", repo_path.display());
@@ -110,15 +113,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                 // Get git status
                 let git_status = check_git_status(&repo_path, &filters, debug);
-                
+
                 // Get GitHub PR info if needed
                 let mut prs = Vec::new();
                 if filters.check_prs {
-                    if let Ok(repo_prs) = fetch_github_prs(&repo_path, token.as_deref(), debug).await {
+                    if let Ok(repo_prs) =
+                        fetch_github_prs(&repo_path, token.as_deref(), debug).await
+                    {
                         if debug {
-                            println!("[-] Found {} open PRs for {}", repo_prs.len(), repo_path.display());
+                            println!(
+                                "[-] Found {} open PRs for {}",
+                                repo_prs.len(),
+                                repo_path.display()
+                            );
                         }
-                        
+
                         // Filter draft PRs if needed
                         prs = if filters.include_draft_prs {
                             repo_prs
@@ -129,7 +138,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         println!("[-] Failed to fetch PRs for {}", repo_path.display());
                     }
                 }
-                
+
                 // Combine into repo status
                 let repo_status = RepoStatus::new(git_status, prs, protected_branches);
 

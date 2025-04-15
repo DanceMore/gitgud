@@ -1,6 +1,6 @@
+use crate::repo::filters::RepoFilters;
 use std::path::Path;
 use std::process::Command;
-use crate::repo::filters::RepoFilters;
 
 #[derive(Debug, Clone)]
 pub struct GitStatus {
@@ -97,8 +97,8 @@ pub fn check_git_status(repo_path: &Path, filters: &RepoFilters, debug: bool) ->
             let current_branch = String::from_utf8_lossy(&output.stdout).trim().to_string();
             status.current_branch = current_branch.clone();
 
-            status.is_default_branch = current_branch == "master" 
-                || current_branch == "main" 
+            status.is_default_branch = current_branch == "master"
+                || current_branch == "main"
                 || current_branch == "develop";
 
             if debug && !status.is_default_branch {

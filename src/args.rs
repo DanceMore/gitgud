@@ -44,19 +44,19 @@ pub struct Args {
     /// Check if branch is not a default branch (main, master, develop)
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     pub check_branch: bool,
-    
+
     /// Check for open GitHub pull requests
     #[arg(long, action = clap::ArgAction::Set, default_value_t = false)]
     pub check_prs: bool,
-    
+
     /// Show draft PRs (requires --check-prs)
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     pub include_draft_prs: bool,
-    
+
     /// GitHub token (or set GITHUB_TOKEN env var)
     #[arg(long, env = "GITHUB_TOKEN")]
     pub github_token: Option<String>,
-    
+
     /// Path to a file containing list of protected branches
     #[arg(long)]
     pub protected_branches_file: Option<PathBuf>,

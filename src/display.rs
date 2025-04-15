@@ -1,12 +1,9 @@
-use colored::*;
-use std::path::Path;
 use crate::repo::filters::RepoFilters;
 use crate::repo::status::RepoStatus;
+use colored::*;
+use std::path::Path;
 
-pub fn display_repos_status(
-    results: &[(std::path::PathBuf, RepoStatus)], 
-    filters: &RepoFilters
-) {
+pub fn display_repos_status(results: &[(std::path::PathBuf, RepoStatus)], filters: &RepoFilters) {
     for (repo_path, status) in results {
         display_repo_status(repo_path, status, filters);
     }
@@ -73,16 +70,20 @@ pub fn display_repo_status(repo_path: &Path, status: &RepoStatus, filters: &Repo
             printed = true;
         }
     }
-    
+
     // Display PR information
     if filters.check_prs && !status.open_prs.is_empty() {
         println!(
             "{}",
-            format!("[PR] {} => {} open pull requests:", repo_path.display(), status.open_prs.len())
-                .blue()
-                .bold()
+            format!(
+                "[PR] {} => {} open pull requests:",
+                repo_path.display(),
+                status.open_prs.len()
+            )
+            .blue()
+            .bold()
         );
-        
+
         for pr in &status.open_prs {
             let draft_marker = if pr.is_draft { "[DRAFT] " } else { "" };
             println!(
@@ -92,7 +93,7 @@ pub fn display_repo_status(repo_path: &Path, status: &RepoStatus, filters: &Repo
                 pr.branch.magenta()
             );
         }
-        
+
         printed = true;
     }
 

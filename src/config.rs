@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 pub struct GitHubConfig {
     /// GitHub token for API access
     pub token: Option<String>,
-    
+
     /// List of static branches to always keep
     #[serde(default)]
     pub protected_branches: Vec<String>,
@@ -41,16 +41,16 @@ pub struct Config {
 
     #[serde(default = "default_true")]
     pub check_branch: bool,
-    
+
     #[serde(default = "default_false")]
     pub check_prs: bool,
-    
+
     #[serde(default = "default_true")]
     pub include_draft_prs: bool,
 
     #[serde(default)]
     pub default_paths: Vec<PathBuf>,
-    
+
     #[serde(default)]
     pub github: GitHubConfig,
 }
@@ -132,6 +132,6 @@ pub fn load_protected_branches(path: &Path) -> Result<Vec<String>, Box<dyn std::
         .map(|line| line.trim().to_string())
         .filter(|line| !line.is_empty() && !line.starts_with('#'))
         .collect();
-    
+
     Ok(branches)
 }
