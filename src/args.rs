@@ -14,7 +14,7 @@ pub struct Args {
     pub debug: bool,
 
     /// Number of threads to use (default: auto)
-    #[arg(short, long)]
+    #[arg(short, long, env = "GITGUD_THREADS")]
     pub threads: Option<usize>,
 
     /// Show all repositories, even those with no issues
@@ -26,7 +26,7 @@ pub struct Args {
     pub config: Option<PathBuf>,
 
     /// Check for untracked files
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_THREADS")]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_UNTRACKED")]
     pub check_untracked: bool,
 
     /// Check for unstaged changes
@@ -41,7 +41,7 @@ pub struct Args {
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_NO_REMOTES")]
     pub check_no_remotes: bool,
 
-    /// Check if branch is not a default branch (main, master, develop)
+    /// Check if branch is not a default branch (main, master)
     #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_BRANCH")]
     pub check_branch: bool,
 
