@@ -15,19 +15,19 @@ jobs:
         id: set_tag
         run: |
           tag=$(git rev-parse --short=8 ${{ github.sha }})
-          echo "::set-output name=tag::${tag}"
+          echo "tag=${tag}" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.set_tag.outputs.tag }}
-          release_name: ${{ steps.set_tag.outputs.tag }}
-          body: ${{ steps.create_release.outputs.message }}
+          name: ${{ steps.set_tag.outputs.tag }}
           draft: false
           prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-freebsd:
     runs-on: ubuntu-latest
@@ -50,31 +50,21 @@ jobs:
       id: set_tag
       run: |
         tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "::set-output name=tag::${tag}"
-
-    - name: Get release ID
-      id: get_release_id
-      run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.set_tag.outputs.tag }} | jq -r '.id')"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        echo "tag=${tag}" >> $GITHUB_OUTPUT
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: Binaries
-        path: |
-          gitgud-freebsd-x86_64
+        name: gitgud-freebsd-x86_64
+        path: gitgud-freebsd-x86_64
 
-    - name: Attach binaries to release
-      id: attach_artifacts
-      uses: actions/upload-release-asset@v1
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.set_tag.outputs.tag }}
+        files: gitgud-freebsd-x86_64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-freebsd-x86_64
-        asset_path: gitgud-freebsd-x86_64
-        asset_name: gitgud-freebsd-x86_64
-        asset_content_type: application/octet-stream
 
   build-linux:
     runs-on: ubuntu-latest
@@ -82,7 +72,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Rust
       uses: actions-rs/toolchain@v1
@@ -99,31 +89,21 @@ jobs:
       id: set_tag
       run: |
         tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "::set-output name=tag::${tag}"
-
-    - name: Get release ID
-      id: get_release_id
-      run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.set_tag.outputs.tag }} | jq -r '.id')"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        echo "tag=${tag}" >> $GITHUB_OUTPUT
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: Binaries
-        path: |
-          gitgud-linux-x86_64
+        name: gitgud-linux-x86_64
+        path: gitgud-linux-x86_64
 
-    - name: Attach binaries to release
-      id: attach_artifacts
-      uses: actions/upload-release-asset@v1
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.set_tag.outputs.tag }}
+        files: gitgud-linux-x86_64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-linux-x86_64
-        asset_path: gitgud-linux-x86_64
-        asset_name: gitgud-linux-x86_64
-        asset_content_type: application/octet-stream
 
   build-macos:
     runs-on: macOS-latest
@@ -131,7 +111,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Rust
       uses: actions-rs/toolchain@v1
@@ -154,43 +134,25 @@ jobs:
       id: set_tag
       run: |
         tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "::set-output name=tag::${tag}"
-
-    - name: Get release ID
-      id: get_release_id
-      run: echo "::set-output name=id::$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ steps.set_tag.outputs.tag }} | jq -r '.id')"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        echo "tag=${tag}" >> $GITHUB_OUTPUT
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: Binaries
+        name: macos-binaries
         path: |
           gitgud-darwin-x86_64
           gitgud-darwin-arm64
 
-    - name: Attach binaries to release
-      id: attach_artifacts
-      uses: actions/upload-release-asset@v1
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.set_tag.outputs.tag }}
+        files: |
+          gitgud-darwin-x86_64
+          gitgud-darwin-arm64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-darwin-x86_64
-        asset_path: gitgud-darwin-x86_64
-        asset_name: gitgud-darwin-x86_64
-        asset_content_type: application/octet-stream
-
-    - name: Attach ARM64 binaries to release
-      id: attach_arm64_artifacts
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-darwin-arm64
-        asset_path: gitgud-darwin-arm64
-        asset_name: gitgud-darwin-arm64
-        asset_content_type: application/octet-stream
 
   build-windows:
     runs-on: windows-latest
@@ -198,7 +160,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Setup Rust
       uses: actions-rs/toolchain@v1
@@ -212,37 +174,21 @@ jobs:
 
     - name: Set release tag
       id: set_tag
-      shell: powershell
+      shell: bash
       run: |
-        $tag = git rev-parse --short=8 ${{ github.sha }}
-        Write-Host "::set-output name=tag::$tag"
-
-    - name: Get release ID
-      id: get_release_id
-      shell: powershell
-      run: |
-        $tag = '${{ steps.set_tag.outputs.tag }}'
-        $url = "https://api.github.com/repos/${{ github.repository }}/releases/tags/$tag"
-        $headers = @{ Authorization = "Bearer $env:GITHUB_TOKEN" }
-        $response = Invoke-RestMethod -Uri $url -Headers $headers -Method Get
-        Write-Output "::set-output name=id::$($response.id)"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        tag=$(git rev-parse --short=8 ${{ github.sha }})
+        echo "tag=${tag}" >> $GITHUB_OUTPUT
 
     - name: Upload binaries
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
-        name: Binaries
-        path: |
-          gitgud-windows-x86_64.exe
+        name: gitgud-windows-x86_64
+        path: gitgud-windows-x86_64.exe
 
-    - name: Attach binaries to release
-      id: attach_artifacts
-      uses: actions/upload-release-asset@v1
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.set_tag.outputs.tag }}
+        files: gitgud-windows-x86_64.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release_id.outputs.id }}/assets?name=gitgud-windows-x86_64.exe
-        asset_path: gitgud-windows-x86_64.exe
-        asset_name: gitgud-windows-x86_64.exe
-        asset_content_type: application/octet-stream
