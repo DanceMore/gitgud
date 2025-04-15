@@ -1,6 +1,7 @@
 use clap::Parser;
 use colored::*;
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -26,33 +27,124 @@ struct Args {
     #[arg(short, long)]
     all: bool,
 
+    /// Path to config file (default: ~/.git_scanner.toml)
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+
     /// Check for untracked files
-    #[arg(long, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     check_untracked: bool,
 
     /// Check for unstaged changes
-    #[arg(long, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     check_unstaged: bool,
 
     /// Check if branch is ahead of remote
-    #[arg(long, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     check_ahead: bool,
 
     /// Check if repository is missing remotes
-    #[arg(long, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     check_remotes: bool,
 
     /// Check if branch is not a default branch (main, master, develop)
-    #[arg(long, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
     check_branch: bool,
 }
 
-fn main() -> std::io::Result<()> {
+/// Config file structure that can be loaded from TOML
+#[derive(Debug, Serialize, Deserialize)]
+struct Config {
+    #[serde(default = "default_threads")]
+    threads: Option<usize>,
+
+    #[serde(default = "default_true")]
+    check_untracked: bool,
+
+    #[serde(default = "default_true")]
+    check_unstaged: bool,
+
+    #[serde(default = "default_true")]
+    check_ahead: bool,
+
+    #[serde(default = "default_true")]
+    check_remotes: bool,
+
+    #[serde(default = "default_true")]
+    check_branch: bool,
+
+    #[serde(default)]
+    default_paths: Vec<PathBuf>,
+}
+
+fn default_threads() -> Option<usize> {
+    None
+}
+
+fn default_true() -> bool {
+    true
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            threads: None,
+            check_untracked: true,
+            check_unstaged: true,
+            check_ahead: true,
+            check_remotes: true,
+            check_branch: true,
+            default_paths: vec![],
+        }
+    }
+}
+
+#[derive(Debug)]
+struct RepoFilters {
+    check_untracked: bool,
+    check_unstaged: bool,
+    check_ahead: bool,
+    check_remotes: bool,
+    check_branch: bool,
+}
+
+struct RepoStatus {
+    untracked_files: bool,
+    unstaged_changes: bool,
+    ahead_of_remote: bool,
+    missing_remote: bool,
+    non_default_branch: Option<String>,
+}
+
+impl RepoStatus {
+    fn has_issues(&self, filters: &RepoFilters) -> bool {
+        (filters.check_untracked && self.untracked_files)
+            || (filters.check_unstaged && self.unstaged_changes)
+            || (filters.check_ahead && self.ahead_of_remote)
+            || (filters.check_remotes && self.missing_remote)
+            || (filters.check_branch && self.non_default_branch.is_some())
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Parse command line arguments
     let args = Args::parse();
 
-    // Configure thread pool if specified
-    if let Some(threads) = args.threads {
+    // Load config file if it exists
+    let config = load_config(args.config.as_deref())?;
+
+    // Merge config with command line arguments
+    let filters = RepoFilters {
+        check_untracked: args.check_untracked,
+        check_unstaged: args.check_unstaged,
+        check_ahead: args.check_ahead,
+        check_remotes: args.check_remotes,
+        check_branch: args.check_branch,
+    };
+
+    // Configure thread pool using either command line or config value
+    let threads = args.threads.or(config.threads);
+    if let Some(threads) = threads {
         rayon::ThreadPoolBuilder::new()
             .num_threads(threads)
             .build_global()
@@ -82,16 +174,8 @@ fn main() -> std::io::Result<()> {
 
     if args.debug {
         println!("[-] Found {} git repositories", entries.len());
+        println!("[-] Active filters: {:?}", filters);
     }
-
-    // Create filter settings based on args
-    let filters = RepoFilters {
-        check_untracked: args.check_untracked,
-        check_unstaged: args.check_unstaged,
-        check_ahead: args.check_ahead,
-        check_remotes: args.check_remotes,
-        check_branch: args.check_branch,
-    };
 
     // Process repositories in parallel
     let results = Arc::new(Mutex::new(Vec::new()));
@@ -121,30 +205,44 @@ fn main() -> std::io::Result<()> {
     Ok(())
 }
 
-struct RepoFilters {
-    check_untracked: bool,
-    check_unstaged: bool,
-    check_ahead: bool,
-    check_remotes: bool,
-    check_branch: bool,
-}
+fn load_config(config_path: Option<&Path>) -> Result<Config, Box<dyn std::error::Error>> {
+    // Determine config file path
+    let config_path = if let Some(path) = config_path {
+        path.to_path_buf()
+    } else {
+        // Try to find config in default locations
+        let home_dir = dirs::home_dir().unwrap_or_default();
+        let home_config = home_dir.join(".git_scanner.toml");
 
-struct RepoStatus {
-    untracked_files: bool,
-    unstaged_changes: bool,
-    ahead_of_remote: bool,
-    missing_remote: bool,
-    non_default_branch: Option<String>,
-}
+        if home_config.exists() {
+            home_config
+        } else {
+            // Also try XDG config directory
+            match dirs::config_dir() {
+                Some(config_dir) => {
+                    let xdg_config = config_dir.join("git_scanner").join("config.toml");
+                    if xdg_config.exists() {
+                        xdg_config
+                    } else {
+                        // Return default config if no file found
+                        return Ok(Config::default());
+                    }
+                }
+                None => return Ok(Config::default()),
+            }
+        }
+    };
 
-impl RepoStatus {
-    fn has_issues(&self, filters: &RepoFilters) -> bool {
-        (filters.check_untracked && self.untracked_files)
-            || (filters.check_unstaged && self.unstaged_changes)
-            || (filters.check_ahead && self.ahead_of_remote)
-            || (filters.check_remotes && self.missing_remote)
-            || (filters.check_branch && self.non_default_branch.is_some())
+    // If the specified config file doesn't exist, return default config
+    if !config_path.exists() {
+        return Ok(Config::default());
     }
+
+    // Read and parse config file
+    let config_content = fs::read_to_string(&config_path)?;
+    let config: Config = toml::from_str(&config_content)?;
+
+    Ok(config)
 }
 
 fn check_repo_status(repo_path: &Path, filters: &RepoFilters, debug: bool) -> RepoStatus {
