@@ -26,31 +26,31 @@ pub struct Args {
     pub config: Option<PathBuf>,
 
     /// Check for untracked files
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_THREADS")]
     pub check_untracked: bool,
 
     /// Check for unstaged changes
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_UNSTAGED")]
     pub check_unstaged: bool,
 
     /// Check if branch is ahead of remote
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_AHEAD")]
     pub check_ahead: bool,
 
     /// Check if repository has no remotes
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_NO_REMOTES")]
     pub check_no_remotes: bool,
 
     /// Check if branch is not a default branch (main, master, develop)
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_CHECK_BRANCH")]
     pub check_branch: bool,
 
     /// Check for open GitHub pull requests
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = false)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = false, env = "GITGUD_CHECK_PRS")]
     pub check_prs: bool,
 
     /// Show draft PRs (requires --check-prs)
-    #[arg(long, action = clap::ArgAction::Set, default_value_t = true)]
+    #[arg(long, action = clap::ArgAction::Set, default_value_t = true, env = "GITGUD_INCLUDE_DRAFT_PRS")]
     pub include_draft_prs: bool,
 
     /// GitHub token (or set GITHUB_TOKEN env var)
