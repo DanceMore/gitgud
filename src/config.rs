@@ -49,9 +49,6 @@ pub struct Config {
     pub include_draft_prs: bool,
 
     #[serde(default)]
-    pub default_paths: Vec<PathBuf>,
-
-    #[serde(default)]
     pub github: GitHubConfig,
 }
 

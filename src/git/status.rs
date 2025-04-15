@@ -98,8 +98,7 @@ pub fn check_git_status(repo_path: &Path, filters: &RepoFilters, debug: bool) ->
             status.current_branch = current_branch.clone();
 
             status.is_default_branch = current_branch == "master"
-                || current_branch == "main"
-                || current_branch == "develop";
+                || current_branch == "main";
 
             if debug && !status.is_default_branch {
                 println!(

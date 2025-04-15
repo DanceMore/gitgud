@@ -4,6 +4,7 @@
 threads = 8
 
 # Check settings
+# TODO: I think these are broken.
 check_untracked = true
 check_unstaged = true
 check_ahead = true
@@ -11,12 +12,6 @@ check_no_remotes = true
 check_branch = true
 check_prs = true
 include_draft_prs = true
-
-# Default directories to scan
-default_paths = [
-    "/home/user/projects",
-    "/home/user/work"
-]
 
 # GitHub configuration
 [github]
@@ -29,5 +24,6 @@ token = "your_github_token_here"
 protected_branches = [
     "feature/long-term",
     "release/v2.0",
-    "maintenance"
+    "maintenance",
+    "develop"
 ]
