@@ -94,11 +94,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ needs.create-release.outputs.version_without_v }}
-<<<<<<< HEAD
         files: gitgud-freebsd-x86_64
-=======
-        files: gitgud-freebsd-x86_64-${{ needs.create-release.outputs.version_without_v }}
->>>>>>> 553ef8295ced6ee439f0c63af69f6ece2ebec333
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -133,11 +129,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ needs.create-release.outputs.version_without_v }}
-<<<<<<< HEAD
         files: gitgud-linux-x86_64
-=======
-        files: gitgud-linux-x86_64-${{ needs.create-release.outputs.version_without_v }}
->>>>>>> 553ef8295ced6ee439f0c63af69f6ece2ebec333
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
