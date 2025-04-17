@@ -118,6 +118,7 @@ jobs:
 
     - name: Build for Linux x86-64
       run: |
+        apt update && apt install musl-tools -y
         rustup target add x86_64-unknown-linux-musl
         cargo build --release --target x86_64-unknown-linux-musl
         cp target/x86_64-unknown-linux-musl/release/gitgud ./gitgud-linux-x86_64
