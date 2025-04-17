@@ -25,6 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     // Load config file if it exists
+    // TODO: I hate this
     let config = config::load_config(args.config.as_deref())?;
 
     // Load protected branches if specified
