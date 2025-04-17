@@ -57,8 +57,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.set_version.outputs.version }}
-          name: ${{ steps.set_version.outputs.version }}
+          tag_name: ${{ steps.set_version.outputs.version_without_v }}
+          name: ${{ steps.set_version.outputs.version_without_v }}
           draft: false
           prerelease: false
           generate_release_notes: true
@@ -82,19 +82,19 @@ jobs:
       with:
         target: x86_64-unknown-freebsd
     - run: cargo build --release
-    - run: cp target/x86_64-unknown-freebsd/release/gitgud ./gitgud-freebsd-x86_64-${{ needs.create-release.outputs.version_without_v }}
+    - run: cp target/x86_64-unknown-freebsd/release/gitgud ./gitgud-freebsd-x86_64
 
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
-        name: gitgud-freebsd-x86_64-${{ needs.create-release.outputs.version_without_v }}
-        path: gitgud-freebsd-x86_64-${{ needs.create-release.outputs.version_without_v }}
+        name: gitgud-freebsd-x86_64
+        path: gitgud-freebsd-x86_64
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
-        files: gitgud-freebsd-x86_64-${{ needs.create-release.outputs.version_without_v }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
+        files: gitgud-freebsd-x86_64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -117,19 +117,19 @@ jobs:
       run: |
         rustup target add x86_64-unknown-linux-musl
         cargo build --release --target x86_64-unknown-linux-musl
-        cp target/x86_64-unknown-linux-musl/release/gitgud ./gitgud-linux-x86_64-${{ needs.create-release.outputs.version_without_v }}
+        cp target/x86_64-unknown-linux-musl/release/gitgud ./gitgud-linux-x86_64
 
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
-        name: gitgud-linux-x86_64-${{ needs.create-release.outputs.version_without_v }}
-        path: gitgud-linux-x86_64-${{ needs.create-release.outputs.version_without_v }}
+        name: gitgud-linux-x86_64
+        path: gitgud-linux-x86_64
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
-        files: gitgud-linux-x86_64-${{ needs.create-release.outputs.version_without_v }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
+        files: gitgud-linux-x86_64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -152,29 +152,29 @@ jobs:
       run: |
         rustup target add x86_64-apple-darwin
         cargo build --release --target x86_64-apple-darwin
-        cp target/x86_64-apple-darwin/release/gitgud ./gitgud-darwin-x86_64-${{ needs.create-release.outputs.version_without_v }}
+        cp target/x86_64-apple-darwin/release/gitgud ./gitgud-darwin-x86_64
 
     - name: Build for macOS arm64
       run: |
         rustup target add aarch64-apple-darwin
         cargo build --release --target aarch64-apple-darwin
-        cp target/aarch64-apple-darwin/release/gitgud ./gitgud-darwin-arm64-${{ needs.create-release.outputs.version_without_v }}
+        cp target/aarch64-apple-darwin/release/gitgud ./gitgud-darwin-arm64
 
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
         name: macos-binaries-${{ needs.create-release.outputs.version_without_v }}
         path: |
-          gitgud-darwin-x86_64-${{ needs.create-release.outputs.version_without_v }}
-          gitgud-darwin-arm64-${{ needs.create-release.outputs.version_without_v }}
+          gitgud-darwin-x86_64
+          gitgud-darwin-arm64
 
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: |
-          gitgud-darwin-x86_64-${{ needs.create-release.outputs.version_without_v }}
-          gitgud-darwin-arm64-${{ needs.create-release.outputs.version_without_v }}
+          gitgud-darwin-x86_64
+          gitgud-darwin-arm64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -196,18 +196,18 @@ jobs:
     - name: Build for Windows x86-64
       run: |
         cargo build --release --target x86_64-pc-windows-msvc
-        cp target/x86_64-pc-windows-msvc/release/gitgud.exe ./gitgud-windows-x86_64-${{ needs.create-release.outputs.version_without_v }}.exe
+        cp target/x86_64-pc-windows-msvc/release/gitgud.exe ./gitgud-windows-x86_64
 
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
-        name: gitgud-windows-x86_64-${{ needs.create-release.outputs.version_without_v }}
-        path: gitgud-windows-x86_64-${{ needs.create-release.outputs.version_without_v }}.exe
+        name: gitgud-windows-x86_64
+        path: gitgud-windows-x86_64
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ needs.create-release.outputs.version }}
-        files: gitgud-windows-x86_64-${{ needs.create-release.outputs.version_without_v }}.exe
+        files: gitgud-windows-x86_64.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
