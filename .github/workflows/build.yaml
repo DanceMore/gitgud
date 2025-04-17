@@ -57,8 +57,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.set_version.outputs.version }}
-          name: ${{ steps.set_version.outputs.version }}
+          tag_name: ${{ steps.set_version.outputs.version_without_v }}
+          name: ${{ steps.set_version.outputs.version_without_v }}
           draft: false
           prerelease: false
           generate_release_notes: true
@@ -93,7 +93,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: gitgud-freebsd-x86_64-${{ needs.create-release.outputs.version_without_v }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -128,7 +128,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: gitgud-linux-x86_64-${{ needs.create-release.outputs.version_without_v }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -171,7 +171,7 @@ jobs:
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: |
           gitgud-darwin-x86_64-${{ needs.create-release.outputs.version_without_v }}
           gitgud-darwin-arm64-${{ needs.create-release.outputs.version_without_v }}
@@ -207,7 +207,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ needs.create-release.outputs.version }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: gitgud-windows-x86_64-${{ needs.create-release.outputs.version_without_v }}.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
