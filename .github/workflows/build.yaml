@@ -8,21 +8,57 @@ on:
 jobs:
   create-release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+      version_without_v: ${{ steps.set_version.outputs.version_without_v }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for proper versioning
 
-      - name: Set release tag
-        id: set_tag
+      - name: Set version
+        id: set_version
         run: |
-          tag=$(git rev-parse --short=8 ${{ github.sha }})
-          echo "tag=${tag}" >> $GITHUB_OUTPUT
+          # Extract current version from Cargo.toml
+          current_version=$(grep -m 1 'version = "[0-9]*\.[0-9]*\.[0-9]*"' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "Current version: $current_version"
+          
+          # Check if commit message contains version bump indicators
+          commit_msg=$(git log -1 --pretty=%B)
+          if [[ "$commit_msg" == *"#major"* ]]; then
+            # Increment the major version
+            new_version=$(echo $current_version | awk -F. '{print $1+1".0.0"}')
+          elif [[ "$commit_msg" == *"#minor"* ]]; then
+            # Increment the minor version
+            new_version=$(echo $current_version | awk -F. '{print $1"."$2+1".0"}')
+          else
+            # Increment the patch version by default
+            new_version=$(echo $current_version | awk -F. '{print $1"."$2"."$3+1}')
+          fi
+          
+          echo "New version: $new_version"
+          
+          # Update version in Cargo.toml
+          sed -i "s/^version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"$new_version\"/" Cargo.toml
+          
+          # Set outputs for later steps
+          echo "version=v$new_version" >> $GITHUB_OUTPUT
+          echo "version_without_v=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Commit version update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Cargo.toml
+          git commit -m "Bump version to ${{ steps.set_version.outputs.version }}"
+          git push
 
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.set_tag.outputs.tag }}
-          name: ${{ steps.set_tag.outputs.tag }}
+          tag_name: ${{ steps.set_version.outputs.version_without_v }}
+          name: ${{ steps.set_version.outputs.version_without_v }}
           draft: false
           prerelease: false
           generate_release_notes: true
@@ -35,6 +71,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: main  # Ensure we're using the updated code with version bump
 
     - name: Install Rust
       run: rustup update stable
@@ -46,12 +84,6 @@ jobs:
     - run: cargo build --release
     - run: cp target/x86_64-unknown-freebsd/release/gitgud ./gitgud-freebsd-x86_64
 
-    - name: Set release tag
-      id: set_tag
-      run: |
-        tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
-
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
@@ -61,7 +93,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.set_tag.outputs.tag }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: gitgud-freebsd-x86_64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -73,6 +105,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        ref: main
 
     - name: Setup Rust
       uses: actions-rs/toolchain@v1
@@ -85,12 +119,6 @@ jobs:
         cargo build --release --target x86_64-unknown-linux-musl
         cp target/x86_64-unknown-linux-musl/release/gitgud ./gitgud-linux-x86_64
 
-    - name: Set release tag
-      id: set_tag
-      run: |
-        tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
-
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
@@ -100,7 +128,7 @@ jobs:
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.set_tag.outputs.tag }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: gitgud-linux-x86_64
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -112,6 +140,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        ref: main
 
     - name: Setup Rust
       uses: actions-rs/toolchain@v1
@@ -130,16 +160,10 @@ jobs:
         cargo build --release --target aarch64-apple-darwin
         cp target/aarch64-apple-darwin/release/gitgud ./gitgud-darwin-arm64
 
-    - name: Set release tag
-      id: set_tag
-      run: |
-        tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
-
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
-        name: macos-binaries
+        name: macos-binaries-${{ needs.create-release.outputs.version_without_v }}
         path: |
           gitgud-darwin-x86_64
           gitgud-darwin-arm64
@@ -147,7 +171,7 @@ jobs:
     - name: Upload Release Assets
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.set_tag.outputs.tag }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: |
           gitgud-darwin-x86_64
           gitgud-darwin-arm64
@@ -161,6 +185,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        ref: main
 
     - name: Setup Rust
       uses: actions-rs/toolchain@v1
@@ -170,25 +196,18 @@ jobs:
     - name: Build for Windows x86-64
       run: |
         cargo build --release --target x86_64-pc-windows-msvc
-        cp target/x86_64-pc-windows-msvc/release/gitgud.exe ./gitgud-windows-x86_64.exe
-
-    - name: Set release tag
-      id: set_tag
-      shell: bash
-      run: |
-        tag=$(git rev-parse --short=8 ${{ github.sha }})
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
+        cp target/x86_64-pc-windows-msvc/release/gitgud.exe ./gitgud-windows-x86_64
 
     - name: Upload binaries
       uses: actions/upload-artifact@v4
       with:
         name: gitgud-windows-x86_64
-        path: gitgud-windows-x86_64.exe
+        path: gitgud-windows-x86_64
 
     - name: Upload Release Asset
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ steps.set_tag.outputs.tag }}
+        tag_name: ${{ needs.create-release.outputs.version_without_v }}
         files: gitgud-windows-x86_64.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
